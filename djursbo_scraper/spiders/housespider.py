@@ -2,7 +2,10 @@ import asyncio
 import scrapy
 from playwright.sync_api import sync_playwright
 from scrapy_playwright.page import PageMethod
-from playwright.async_api import async_playwright
+from playwright.async_api import (
+    async_playwright,
+    TimeoutError as PlaywrightTimeoutError,
+)
 
 
 class HousespiderSpider(scrapy.Spider):
@@ -43,8 +46,9 @@ class HousespiderSpider(scrapy.Spider):
                     }
                 # click button
                 button_selector = "a.active-shadow"
-                button = page.locator(button_selector).get_by_text("Næste").nth(1)
-                if not button:
+                try:
+                    button = page.locator(button_selector).get_by_text("Næste").nth(1)
+                    await button.click()
+                except PlaywrightTimeoutError:
                     break
-                await button.click()
             await browser.close()
